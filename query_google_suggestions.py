@@ -6,9 +6,9 @@ from time import sleep
 import diskcache as dc
 import requests
 
-MAX_DB_SIZE = 500
+from conf import GRAPH_DB_CSV
 
-GRAPH_DB_CSV = '{original_term}_graph_db.csv'
+MAX_DB_SIZE = 100
 
 OUTPUT = 'firefox'  # this is json output, use OUTPUT = 'toolbar' for XML output
 LOCALE = "us"
@@ -21,7 +21,7 @@ COLUMN_NAMES = ['source', 'target', 'weight', 'id', 'original_term']
 
 def main():
     parser = ArgumentParser(description='build "vs" term query graph')
-    parser.add_argument('--original-term', action='store', type=str, default="tensorflow", required=False)
+    parser.add_argument('--original-term', action='store', type=str, default="Amoxicillin", required=False)
     parser.add_argument('-n', '--num-terms', action='store', type=int, default=NUM_OF_TERMS_IN_ITERATION,
                         help="for each source term, get top N target terms")
     parser.add_argument('-m', '--max-db-size', action='store', type=int, default=MAX_DB_SIZE,
@@ -78,8 +78,7 @@ def send_request(source_term):
     cache = dc.Cache('google_api_requests')
     request_url = f"{BASE_URL}?&output={OUTPUT}&gl={LOCALE}&hl={LANG}&q={source_term}%20vs%20"
     if request_url not in cache:
-        print(f'getting {source_term}, sleeping first.')
-        sleep(5)
+        print(f'getting {source_term}.')
         response = requests.get(request_url)
         cache.set(request_url, response)
     else:
