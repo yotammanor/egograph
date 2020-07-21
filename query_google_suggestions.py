@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 from collections import OrderedDict
 from csv import DictWriter
-from time import sleep
 
 import diskcache as dc
 import requests

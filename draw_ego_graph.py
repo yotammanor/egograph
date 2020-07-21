@@ -10,8 +10,8 @@ from conf import GRAPH_DB_CSV
 ORIGINAL_TERM = 'Amoxicillin'
 
 
-def main():
-    edges, nodes = build_formatted_graph_data()
+def main(term=ORIGINAL_TERM):
+    edges, nodes = build_formatted_graph_data(term=term)
     print(edges, nodes)
     # BUILD THE INITIAL FULL GRAPH
     G = nx.Graph()
@@ -19,14 +19,14 @@ def main():
     G.add_edges_from(edges)
 
     # BUILD THE EGO GRAPH FOR TENSORFLOW
-    EG = nx.ego_graph(G, ORIGINAL_TERM, distance='distance', radius=25)
+    EG = nx.ego_graph(G, term, distance='distance', radius=15)
 
     # FIND THE 2-CONNECTED SUBGRAPHS
-    subgraphs = nx.algorithms.connectivity.edge_kcomponents.k_edge_subgraphs(EG, k=3)
+    subgraphs = nx.algorithms.connectivity.edge_kcomponents.k_edge_subgraphs(EG, k=1)
 
     # GET THE SUBGRAPH THAT CONTAINS TENSORFLOW
     for s in subgraphs:
-        if ORIGINAL_TERM in s:
+        if term in s:
             break
     pruned_EG = EG.subgraph(s)
 
@@ -37,12 +37,12 @@ def main():
         nx.draw_networkx_edges(pruned_EG, pos, edgelist=[edge], width=pruned_EG.get_edge_data(*edge)['weight'],
                                alpha=0.3)
     # Draw ego as large and red
-    nx.draw_networkx_nodes(pruned_EG, pos, nodelist=[ORIGINAL_TERM], node_size=600, node_color='r')
+    nx.draw_networkx_nodes(pruned_EG, pos, nodelist=[term], node_size=600, node_color='r')
     nx.draw_networkx_labels(pruned_EG, label_pos, font_size=10)
     plt.show()
 
 
-def build_formatted_graph_data():
+def build_formatted_graph_data(term):
     # SAMPLE DATA FORMAT
     # nodes = [('tensorflow', {'count': 13}),
     # ('pytorch', {'count': 6}),
@@ -57,7 +57,7 @@ def build_formatted_graph_data():
     # ('opencv', 'tensorflow', {'weight': 7, 'distance': 4}),
     # ('spark', 'tensorflow', {'weight': 1, 'distance': 10}), ...]
 
-    with open(GRAPH_DB_CSV.format(original_term=ORIGINAL_TERM), 'r') as f:
+    with open(GRAPH_DB_CSV.format(original_term=term), 'r') as f:
         reader = DictReader(f)
         rows = [row for row in reader]
     nodes_counter = Counter(row['source'] for row in rows) + Counter(row['target'] for row in rows)
