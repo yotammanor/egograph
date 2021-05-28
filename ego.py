@@ -10,7 +10,7 @@ from query_google_suggestions import (
 
 def main():
     parser = ArgumentParser(description='build "vs" term query graph')
-    parser.add_argument('--original-term', action='store', type=str, default="dramatiq", required=False)
+    parser.add_argument('--original-term', action='store', type=str, default="jenkins", required=False)
     parser.add_argument('-n', '--num-terms', action='store', type=int, default=NUM_OF_TERMS_IN_ITERATION,
                         help="for each source term, get top N target terms")
     parser.add_argument('-m', '--max-db-size', action='store', type=int, default=MAX_DB_SIZE,

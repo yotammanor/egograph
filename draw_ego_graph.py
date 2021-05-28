@@ -7,7 +7,7 @@ import networkx as nx
 
 from conf import GRAPH_DB_CSV
 
-ORIGINAL_TERM = 'Amoxicillin'
+ORIGINAL_TERM = 'jenkins'
 
 
 def main(term=ORIGINAL_TERM):
@@ -19,10 +19,10 @@ def main(term=ORIGINAL_TERM):
     G.add_edges_from(edges)
 
     # BUILD THE EGO GRAPH FOR TENSORFLOW
-    EG = nx.ego_graph(G, term, distance='distance', radius=15)
+    EG = nx.ego_graph(G, term, distance='distance', radius=30)
 
     # FIND THE 2-CONNECTED SUBGRAPHS
-    subgraphs = nx.algorithms.connectivity.edge_kcomponents.k_edge_subgraphs(EG, k=1)
+    subgraphs = nx.algorithms.connectivity.edge_kcomponents.k_edge_subgraphs(EG, k=2)
 
     # GET THE SUBGRAPH THAT CONTAINS TENSORFLOW
     for s in subgraphs:
