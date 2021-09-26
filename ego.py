@@ -1,15 +1,15 @@
 from argparse import ArgumentParser
 
-from draw_ego_graph import main as draw_ego_graph
+from draw_ego_graph import (
+    GRAPH_RADIUS,
+    K_EDGE_SUBGRAPHS,
+    main as draw_ego_graph,
+)
 from query_google_suggestions import (
     MAX_DB_SIZE,
     NUM_OF_TERMS_IN_ITERATION,
     build_graph_for_term,
 )
-
-K_EDGE_SUBGRAPHS = 2
-
-GRAPH_RADIUS = 30
 
 
 def main():
@@ -19,9 +19,9 @@ def main():
                         help="for each source term, get top N target terms")
     parser.add_argument('-m', '--max-db-size', action='store', type=int, default=MAX_DB_SIZE,
                         help="stop crawl at this number the latest")
-    parser.add_argument('--graph-radius', action='store', type=int, default=60,
+    parser.add_argument('--graph-radius', action='store', type=int, default=GRAPH_RADIUS,
                         help="max radius of pruned graph")
-    parser.add_argument('--k-edge-subgraphs', action='store', type=int, default=2,
+    parser.add_argument('--k-edge-subgraphs', action='store', type=int, default=K_EDGE_SUBGRAPHS,
                         help="connectedness to original term")
 
     args = parser.parse_args()

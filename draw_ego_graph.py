@@ -7,8 +7,11 @@ import networkx as nx
 
 from conf import GRAPH_DB_CSV
 
+K_EDGE_SUBGRAPHS = 2
+GRAPH_RADIUS = 30
 
-def main(term: str, k_edge_subgraphs: int = 2, graph_radius: int = 30) -> None:
+
+def main(term: str, k_edge_subgraphs: int = K_EDGE_SUBGRAPHS, graph_radius: int = GRAPH_RADIUS) -> None:
     edges, nodes = build_formatted_graph_data(term=term)
     print(f'{edges=}')
     print(f'{nodes=}')
