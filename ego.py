@@ -7,6 +7,10 @@ from query_google_suggestions import (
     build_graph_for_term,
 )
 
+K_EDGE_SUBGRAPHS = 2
+
+GRAPH_RADIUS = 30
+
 
 def main():
     parser = ArgumentParser(description='build "vs" term query graph')
@@ -15,9 +19,14 @@ def main():
                         help="for each source term, get top N target terms")
     parser.add_argument('-m', '--max-db-size', action='store', type=int, default=MAX_DB_SIZE,
                         help="stop crawl at this number the latest")
+    parser.add_argument('--graph-radius', action='store', type=int, default=60,
+                        help="max radius of pruned graph")
+    parser.add_argument('--k-edge-subgraphs', action='store', type=int, default=2,
+                        help="connectedness to original term")
+
     args = parser.parse_args()
     build_graph_for_term(original_term=args.original_term, max_db_size=args.max_db_size, n_top_terms=args.num_terms)
-    draw_ego_graph(term=args.original_term)
+    draw_ego_graph(term=args.original_term, k_edge_subgraphs=args.k_edge_subgraphs, graph_radius=args.graph_radius)
 
 
 if __name__ == '__main__':

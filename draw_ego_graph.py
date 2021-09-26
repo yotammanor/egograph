@@ -7,56 +7,20 @@ import networkx as nx
 
 from conf import GRAPH_DB_CSV
 
-ORIGINAL_TERM = 'jenkins'
 
-
-def main(term=ORIGINAL_TERM):
+def main(term: str, k_edge_subgraphs: int = 2, graph_radius: int = 30) -> None:
     edges, nodes = build_formatted_graph_data(term=term)
-    print(edges, nodes)
-    # BUILD THE INITIAL FULL GRAPH
-    G = nx.Graph()
-    G.add_nodes_from(nodes)
-    G.add_edges_from(edges)
+    print(f'{edges=}')
+    print(f'{nodes=}')
+    G = _build_graph_object(edges, nodes)
 
-    # BUILD THE EGO GRAPH FOR TENSORFLOW
-    EG = nx.ego_graph(G, term, distance='distance', radius=30)
+    pruned_EG = _prune_graph(G, term, graph_radius=graph_radius, k_edge_subgraphs=k_edge_subgraphs)
 
-    # FIND THE 2-CONNECTED SUBGRAPHS
-    subgraphs = nx.algorithms.connectivity.edge_kcomponents.k_edge_subgraphs(EG, k=2)
-
-    # GET THE SUBGRAPH THAT CONTAINS TENSORFLOW
-    for s in subgraphs:
-        if term in s:
-            break
-    pruned_EG = EG.subgraph(s)
-
-    pos = nx.spring_layout(pruned_EG)
-    label_pos = {k: (v[0], v[1] - 0.04) for k, v in pos.items()}
-    nx.draw_networkx_nodes(pruned_EG, pos, node_color='b', node_size=100)
-    for edge in pruned_EG.edges:
-        nx.draw_networkx_edges(pruned_EG, pos, edgelist=[edge], width=pruned_EG.get_edge_data(*edge)['weight'],
-                               alpha=0.3)
-    # Draw ego as large and red
-    nx.draw_networkx_nodes(pruned_EG, pos, nodelist=[term], node_size=600, node_color='r')
-    nx.draw_networkx_labels(pruned_EG, label_pos, font_size=10)
-    plt.show()
+    _draw_graph(pruned_EG, term)
 
 
 def build_formatted_graph_data(term):
-    # SAMPLE DATA FORMAT
-    # nodes = [('tensorflow', {'count': 13}),
-    # ('pytorch', {'count': 6}),
-    # ('keras', {'count': 6}),
-    # ('scikit', {'count': 2}),
-    # ('opencv', {'count': 5}),
-    # ('spark', {'count': 13}), ...]
-
-    # edges = [('pytorch', 'tensorflow', {'weight': 10, 'distance': 1}),
-    # ('keras', 'tensorflow', {'weight': 9, 'distance': 2}),
-    # ('scikit', 'tensorflow', {'weight': 8, 'distance': 3}),
-    # ('opencv', 'tensorflow', {'weight': 7, 'distance': 4}),
-    # ('spark', 'tensorflow', {'weight': 1, 'distance': 10}), ...]
-
+    print('loading and formatting graph data')
     with open(GRAPH_DB_CSV.format(original_term=term), 'r') as f:
         reader = DictReader(f)
         rows = [row for row in reader]
@@ -74,5 +38,43 @@ def build_formatted_graph_data(term):
     return edges, nodes
 
 
+def _build_graph_object(edges, nodes) -> nx.Graph:
+    print('building graph object')
+    # BUILD THE INITIAL FULL GRAPH
+    G = nx.Graph()
+    G.add_nodes_from(nodes)
+    G.add_edges_from(edges)
+    return G
+
+
+def _prune_graph(G, term, graph_radius, k_edge_subgraphs):
+    print('pruning graph')
+    # BUILD THE EGO GRAPH FOR 'TERM'
+    EG = nx.ego_graph(G, term, distance='distance', radius=graph_radius)
+    # FIND THE K-CONNECTED SUBGRAPHS
+    subgraphs = nx.algorithms.connectivity.edge_kcomponents.k_edge_subgraphs(EG, k=k_edge_subgraphs)
+    # GET THE SUBGRAPH THAT CONTAINS 'TERM'
+    for s in subgraphs:
+        if term in s:
+            break
+    pruned_EG = EG.subgraph(s)
+    return pruned_EG
+
+
+def _draw_graph(pruned_EG, term):
+    print('drawing graph')
+    pos = nx.spring_layout(pruned_EG)
+    label_pos = {k: (v[0], v[1] - 0.04) for k, v in pos.items()}
+    nx.draw_networkx_nodes(pruned_EG, pos, node_color='b', node_size=100)
+    for edge in pruned_EG.edges:
+        nx.draw_networkx_edges(pruned_EG, pos, edgelist=[edge], width=pruned_EG.get_edge_data(*edge)['weight'],
+                               alpha=0.3)
+    # Draw ego as large and red
+    nx.draw_networkx_nodes(pruned_EG, pos, nodelist=[term], node_size=600, node_color='r')
+    nx.draw_networkx_labels(pruned_EG, label_pos, font_size=10)
+    plt.show()
+
+
 if __name__ == '__main__':
-    main()
+    term = input('term: ')
+    main(term=term)
