@@ -5,7 +5,7 @@ from csv import DictWriter
 import diskcache as dc
 import requests
 
-from conf import GRAPH_DB_CSV
+from src.conf import GRAPH_DB_CSV
 
 MAX_DB_SIZE = 100
 
@@ -26,14 +26,14 @@ def main():
     parser.add_argument('-m', '--max-db-size', action='store', type=int, default=MAX_DB_SIZE,
                         help="stop crawl at this number the latest")
     args = parser.parse_args()
-    build_graph_for_term(original_term=args.original_term, max_db_size=args.max_db_size, n_top_terms=args.num_terms)
+    build_graph_for_term(term=args.original_term, max_db_size=args.max_db_size, n_top_terms=args.num_terms)
 
 
-def build_graph_for_term(original_term, max_db_size=MAX_DB_SIZE, n_top_terms=NUM_OF_TERMS_IN_ITERATION):
+def build_graph_for_term(term, max_db_size=MAX_DB_SIZE, n_top_terms=NUM_OF_TERMS_IN_ITERATION):
     global_term_index = 0
     searched_terms = set()
-    terms_to_search = [original_term]
-    with open(GRAPH_DB_CSV.format(original_term=original_term), 'w', newline='') as f:
+    terms_to_search = [term]
+    with open(GRAPH_DB_CSV.format(original_term=term), 'w', newline='') as f:
         writer = DictWriter(f, fieldnames=COLUMN_NAMES)
         writer.writerow(dict(zip(COLUMN_NAMES, COLUMN_NAMES)))
     while terms_to_search and global_term_index < max_db_size:
@@ -45,14 +45,14 @@ def build_graph_for_term(original_term, max_db_size=MAX_DB_SIZE, n_top_terms=NUM
             searched_terms.add(source_term)
             target_terms = get_target_terms(source_term, n_top_terms=n_top_terms)
             terms_to_search += target_terms
-            with open(GRAPH_DB_CSV.format(original_term=original_term), 'a', newline='') as f:
+            with open(GRAPH_DB_CSV.format(original_term=term), 'a', newline='') as f:
                 writer = DictWriter(f, fieldnames=COLUMN_NAMES)
                 for i, target_term in enumerate(target_terms):
                     global_term_index += 1
                     writer.writerow(
                         dict(zip(
                             COLUMN_NAMES,
-                            [source_term, target_term, n_top_terms - i, global_term_index, original_term]
+                            [source_term, target_term, n_top_terms - i, global_term_index, term]
                         )))
 
 

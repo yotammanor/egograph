@@ -5,7 +5,7 @@ from csv import DictReader
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from conf import GRAPH_DB_CSV
+from src.conf import GRAPH_DB_CSV
 
 K_EDGE_SUBGRAPHS = 2
 GRAPH_RADIUS = 30
